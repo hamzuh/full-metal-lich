@@ -122,11 +122,11 @@ class WallColliders(pygame.sprite.Sprite):
         self.rect = (self.rectval)
 
 topwall = WallColliders()
-topwall.rectval = [0, 0, 240, 20]
+topwall.rectval = [0, 0, 240, 17]
 bottomwall = WallColliders()
-bottomwall.rectval = [0, 160, 240, 20]
+bottomwall.rectval = [0, 158, 240, 20]
 leftwall = WallColliders()
-leftwall.rectval = [0, 0, 20, 180]
+leftwall.rectval = [0, 0, 14, 180]
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -169,7 +169,7 @@ class Player(pygame.sprite.Sprite):
         textsurface = myfont.render(str(int(self.angle)), False, (255, 255, 255))
         screen.blit(textsurface,(50,210))
     def draw(self):
-        screen.blit(self.body, [self.x, self.y])
+        screen.blit(self.body, [self.x + 5, self.y + 1])
         screen.blit(self.rotimage, self.rect)
     def updaterect(self):
         self.rect = pygame.Rect(self.x, self.y, 20, 20)
