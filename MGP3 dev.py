@@ -18,18 +18,14 @@ SIZE = [240, 240]
 DSIZE = [480, 480]
 TSIZE = [720, 720]
 
+global res
 dub = False
 trip = False
 
 def normal():
     global screen
     screen = pygame.display.set_mode(SIZE)
-    pygame.display.set_caption("METAL PACKET")
-
-def full():
-    global screen
-    screen = pygame.display.set_mode((SIZE), pygame.FULLSCREEN)
-    pygame.display.set_caption("METAL PACKET: Fullscreen Edition")
+    pygame.display.set_caption("FULL METAL LICH")
 
 def doubled():
     global screen
@@ -40,18 +36,7 @@ def doubled():
     res = DSIZE
     window = pygame.display.set_mode(DSIZE)
     screen = pygame.Surface(SIZE)
-    pygame.display.set_caption("METAL PACKET: Double Boogaloo")
-
-def doubledfull():
-    global screen
-    global window
-    global res
-    global invscale
-    invscale = 1/2
-    res = DSIZE
-    window = pygame.display.set_mode((DSIZE), pygame.FULLSCREEN)
-    screen = pygame.Surface(SIZE)
-    pygame.display.set_caption("METAL PACKET: Fullscreen Boogaloo")
+    pygame.display.set_caption("FULL METAL LICH: Fleshed Out")
 
 def tripled ():
     global screen
@@ -62,7 +47,23 @@ def tripled ():
     res = TSIZE
     window = pygame.display.set_mode(TSIZE)
     screen = pygame.Surface(SIZE)
-    pygame.display.set_caption("METAL PACKET: Trifecta of Resolution")
+    pygame.display.set_caption("FULL METAL LICH: No Bones About It")
+
+def full():
+    global screen
+    screen = pygame.display.set_mode((SIZE), pygame.FULLSCREEN)
+    pygame.display.set_caption("FULL METAL LICH: Nice to Eat You")
+
+def doubledfull():
+    global screen
+    global window
+    global res
+    global invscale
+    invscale = 1/2
+    res = DSIZE
+    window = pygame.display.set_mode((DSIZE), pygame.FULLSCREEN)
+    screen = pygame.Surface(SIZE)
+    pygame.display.set_caption("FULL METAL LICH: Rave in the Grave")
 
 def tripledfull ():
     global screen
@@ -73,7 +74,7 @@ def tripledfull ():
     res = TSIZE
     window = pygame.display.set_mode((TSIZE), pygame.FULLSCREEN)
     screen = pygame.Surface(SIZE)
-    pygame.display.set_caption("METAL PACKET: Fullscreen Trifecta Edition")
+    pygame.display.set_caption("FULL METAL LICH: Questosterone")
 
 print("")
 print("1: 240 x 240")
@@ -133,22 +134,34 @@ class Player(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.bodyspritelist = ["char1.png", "char2.png", "char3.png", "char4.png"]
         self.charnum = 0
+        self.animelapsed = 0
+        self.moveelapsed = 0
         self.collide = 0
         self.x = 0
         self.y = 0
         self.speed = 0
         self.bulletspeed = 0
-        self.bulletsprite = pygame.image.load("bullet.png")
+        #self.bulletsprite = pygame.image.load("bullet.png")
         self.body = pygame.image.load(self.bodyspritelist[0])
         self.currentsprite = ("char_arm.png")
         self.image = pygame.image.load(self.currentsprite)
         self.rect = self.image.get_rect()
-    def idleanimation(self):
-        #if pygame.key.get_focused() == False:
-        self.charnum += 1
-        if self.charnum > 3:
-            self.charnum = 0
-        self.body = pygame.image.load(self.bodyspritelist[self.charnum])
+    def animation(self):
+        if not any (pygame.key.get_pressed()):
+                self.charnum += 1
+                if self.charnum > 3:
+                    self.charnum = 0
+                self.body = pygame.image.load(self.bodyspritelist[self.charnum])
+    def updater(self):
+        ticker = clock.tick()
+        self.moveelapsed += ticker
+        if self.moveelapsed > 5:
+            self.moveelapsed = 0
+            self.moveandcollide()
+        self.animelapsed += ticker
+        if self.animelapsed > 83:
+            self.animelapsed = 0
+            self.animation()
     def collidedetect(self):
         if pygame.sprite.spritecollideany(player, collidelist):
             self.collide = 1
@@ -176,8 +189,10 @@ class Player(pygame.sprite.Sprite):
         self.rotimage = pygame.transform.rotate(self.image, self.angle)
         self.rect = self.rotimage.get_rect(center = (self.rect.center))
     def monitor(self):
-        textsurface = myfont.render(str(int(self.angle)), False, (255, 255, 255))
-        screen.blit(textsurface,(50,210))
+        framedisplay = myfont.render(("FPS: " + str(int(clock.get_fps()))), False, (255, 255, 255))
+        angledisplay = myfont.render(("Angle: " + str(int(self.angle))), False, (255, 255, 255))
+        screen.blit(framedisplay,(10,190))
+        screen.blit(angledisplay,(10,210))
     def draw(self):
         screen.blit(self.body, [self.x + 5, self.y + 1])
         screen.blit(self.rotimage, self.rect)
@@ -195,7 +210,7 @@ class Player(pygame.sprite.Sprite):
 player = Player()
 player.x = 29
 player.y = 89
-player.speed = 2
+player.speed = 1
 player.bulletspeed = 5
 
 class Cursor(pygame.sprite.Sprite):
@@ -234,8 +249,7 @@ while not done:
     for x in collidelist:
         x.collide()
 
-    player.idleanimation()
-    player.moveandcollide()
+    player.updater()
     player.rotate()
     player.monitor()
     player.draw()
@@ -245,6 +259,6 @@ while not done:
     if dub == True or trip == True:        
         pygame.transform.scale(screen, res, window)
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick()
 
 pygame.quit()

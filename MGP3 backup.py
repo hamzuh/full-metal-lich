@@ -122,23 +122,45 @@ class WallColliders(pygame.sprite.Sprite):
         self.rect = (self.rectval)
 
 topwall = WallColliders()
-topwall.rectval = [0, 0, 240, 20]
+topwall.rectval = [0, 0, 240, 17]
 bottomwall = WallColliders()
-bottomwall.rectval = [0, 160, 240, 20]
+bottomwall.rectval = [0, 158, 240, 20]
 leftwall = WallColliders()
-leftwall.rectval = [0, 0, 20, 180]
+leftwall.rectval = [0, 0, 14, 180]
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
+        self.bodyspritelist = ["char1.png", "char2.png", "char3.png", "char4.png"]
+        self.charnum = 0
+        self.animelapsed = 0
+        self.moveelapsed = 0
         self.collide = 0
         self.x = 0
         self.y = 0
         self.speed = 0
+        self.bulletspeed = 0
+        #self.bulletsprite = pygame.image.load("bullet.png")
+        self.body = pygame.image.load(self.bodyspritelist[0])
         self.currentsprite = ("char_arm.png")
-        self.body = pygame.image.load("char.png")
         self.image = pygame.image.load(self.currentsprite)
         self.rect = self.image.get_rect()
+    def animation(self):
+        if not any (pygame.key.get_pressed()):
+                self.charnum += 1
+                if self.charnum > 3:
+                    self.charnum = 0
+                self.body = pygame.image.load(self.bodyspritelist[self.charnum])
+    def updater(self):
+        ticker = clock.tick()
+        self.moveelapsed += ticker
+        if self.moveelapsed > 5:
+            self.moveelapsed = 0
+            self.moveandcollide()
+        self.animelapsed += ticker
+        if self.animelapsed > 83:
+            self.animelapsed = 0
+            self.animation()
     def collidedetect(self):
         if pygame.sprite.spritecollideany(player, collidelist):
             self.collide = 1
@@ -166,10 +188,12 @@ class Player(pygame.sprite.Sprite):
         self.rotimage = pygame.transform.rotate(self.image, self.angle)
         self.rect = self.rotimage.get_rect(center = (self.rect.center))
     def monitor(self):
-        textsurface = myfont.render(str(int(self.angle)), False, (255, 255, 255))
-        screen.blit(textsurface,(50,210))
+        framedisplay = myfont.render(("FPS: " + str(int(clock.get_fps()))), False, (255, 255, 255))
+        angledisplay = myfont.render(("Angle: " + str(int(self.angle))), False, (255, 255, 255))
+        screen.blit(framedisplay,(10,190))
+        screen.blit(angledisplay,(10,210))
     def draw(self):
-        screen.blit(self.body, [self.x, self.y])
+        screen.blit(self.body, [self.x + 5, self.y + 1])
         screen.blit(self.rotimage, self.rect)
     def updaterect(self):
         self.rect = pygame.Rect(self.x, self.y, 20, 20)
@@ -185,7 +209,24 @@ class Player(pygame.sprite.Sprite):
 player = Player()
 player.x = 29
 player.y = 89
-player.speed = 2
+player.speed = 1
+player.bulletspeed = 5
+
+class Cursor(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = ()
+    def crosshair(self):
+        pos = pygame.mouse.get_pos()
+        if dub == True or trip == True:
+            pos = pos[0] * invscale, pos[1] * invscale
+            mouse_x, mouse_y = pos
+        pos = ((pos[0] - 7), (pos[1] - 7))
+        pygame.mouse.set_visible(False)
+        screen.blit(self.image, pos)
+
+cursor = Cursor()
+cursor.image = pygame.image.load("crosshair.png")
 
 done = False
 
@@ -207,14 +248,16 @@ while not done:
     for x in collidelist:
         x.collide()
 
-    player.moveandcollide()
+    player.updater()
     player.rotate()
-    player.monitor()   
+    player.monitor()
     player.draw()
+
+    cursor.crosshair()
 
     if dub == True or trip == True:        
         pygame.transform.scale(screen, res, window)
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick()
 
 pygame.quit()
