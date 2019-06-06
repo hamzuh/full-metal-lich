@@ -131,14 +131,24 @@ leftwall.rectval = [0, 0, 14, 180]
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
+        self.bodyspritelist = ["char1.png", "char2.png", "char3.png", "char4.png"]
+        self.charnum = 0
         self.collide = 0
         self.x = 0
         self.y = 0
         self.speed = 0
+        self.bulletspeed = 0
+        self.bulletsprite = pygame.image.load("bullet.png")
+        self.body = pygame.image.load(self.bodyspritelist[0])
         self.currentsprite = ("char_arm.png")
-        self.body = pygame.image.load("char.png")
         self.image = pygame.image.load(self.currentsprite)
         self.rect = self.image.get_rect()
+    def idleanimation(self):
+        #if pygame.key.get_focused() == False:
+        self.charnum += 1
+        if self.charnum > 3:
+            self.charnum = 0
+        self.body = pygame.image.load(self.bodyspritelist[self.charnum])
     def collidedetect(self):
         if pygame.sprite.spritecollideany(player, collidelist):
             self.collide = 1
@@ -186,6 +196,23 @@ player = Player()
 player.x = 29
 player.y = 89
 player.speed = 2
+player.bulletspeed = 5
+
+class Cursor(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = ()
+    def crosshair(self):
+        pos = pygame.mouse.get_pos()
+        if dub == True or trip == True:
+            pos = pos[0] * invscale, pos[1] * invscale
+            mouse_x, mouse_y = pos
+        pos = ((pos[0] - 7), (pos[1] - 7))
+        pygame.mouse.set_visible(False)
+        screen.blit(self.image, pos)
+
+cursor = Cursor()
+cursor.image = pygame.image.load("crosshair.png")
 
 done = False
 
@@ -207,10 +234,13 @@ while not done:
     for x in collidelist:
         x.collide()
 
+    player.idleanimation()
     player.moveandcollide()
     player.rotate()
-    player.monitor()   
+    player.monitor()
     player.draw()
+
+    cursor.crosshair()
 
     if dub == True or trip == True:        
         pygame.transform.scale(screen, res, window)
