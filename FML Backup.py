@@ -122,9 +122,9 @@ class WallColliders(pygame.sprite.Sprite):
 topwall = WallColliders()
 topwall.rectval = [0, 0, 240, 18]
 bottomwall = WallColliders()
-bottomwall.rectval = [0, 158, 240, 20]
+bottomwall.rectval = [0, 159, 240, 20]
 leftwall = WallColliders()
-leftwall.rectval = [0, 0, 20, 180]
+leftwall.rectval = [0, 0, 19, 180]
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, angle):
@@ -136,6 +136,7 @@ class Bullet(pygame.sprite.Sprite):
         self.angle = angle
         self.x_add = 0
         self.y_add = 0
+        self.rect = self.image.get_rect()
     def assign(self):
         self.x_add = (self.speed * math.cos(math.radians(self.angle)))
         self.y_add = (self.speed * math.sin(math.radians(self.angle)))
@@ -150,25 +151,34 @@ bullets = []
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.bodyspritelist = ["sprites/char1.png", "sprites/char2.png", "sprites/char3.png", "sprites/char4.png"]
         self.charnum = 0
-        self.animelapsed = 0
+        self.walknum = 0
         self.moveelapsed = 0
         self.shootelapsed = 0
+        self.runelapsed = 0
+        self.idleelapsed = 0
         self.collide = False
         self.x = 0
         self.y = 0
         self.speed = 0
         self.angle = 0
-        self.body = pygame.image.load(self.bodyspritelist[0]).convert_alpha()
+        self.body = pygame.image.load("sprites/char.png").convert_alpha()
         self.image = pygame.image.load("sprites/char_arm.png").convert_alpha()
         self.rect = self.body.get_rect()
-    def animation(self):
+    def idleanimation(self):
         if not any (pygame.key.get_pressed()):
-                self.charnum += 1
-                if self.charnum > 3:
-                    self.charnum = 0
-                self.body = pygame.image.load(self.bodyspritelist[self.charnum]).convert_alpha()
+            self.walknum = 1
+            self.charnum += 1
+            if self.charnum > 3:
+                self.charnum = 1
+            self.body = pygame.image.load("sprites/char" + str(self.charnum) + ".png").convert_alpha()
+    def walking(self):    
+        if key[K_RIGHT] or key[ord("d")]:
+            self.walknum += 1
+            self.charnum = 1
+            if self.walknum > 16:
+                self.walknum = 1
+            self.body = pygame.image.load("sprites/char_run" + str(self.walknum) + ".png").convert_alpha()
     def shoot(self):
         if mouse[0]:
             new_bullet = Bullet(self.x + 4, self.y + 9, self.angle)
@@ -177,17 +187,21 @@ class Player(pygame.sprite.Sprite):
     def updater(self):
         ticker = clock.tick_busy_loop()
         self.moveelapsed += ticker
+        self.shootelapsed += ticker
+        self.runelapsed += ticker
+        self.idleelapsed += ticker
         if self.moveelapsed > 5:
             self.moveelapsed = 0
             self.moveandcollide()
-        self.shootelapsed += ticker
-        if self.shootelapsed > 83:
+        if self.shootelapsed > 100:
             self.shootelapsed = 0
             self.shoot()
-        self.animelapsed += ticker
-        if self.animelapsed > 83:
-            self.animelapsed = 0
-            self.animation()
+        if self.runelapsed > 20:
+            self.runelapsed = 0
+            self.walking()
+        if self.idleelapsed > 95:
+            self.idleelapsed = 0
+            self.idleanimation()
     def move(self):
         if key[K_LEFT] or key[ord("a")]:
                 self.x -= self.speed
@@ -269,8 +283,8 @@ while not done:
     for bullet in bullets:
         bullet.update()
         bullet.draw()
-    if len(bullets) > 15:
-        bullets.pop(0)
+    if len(bullets) > 10:
+        del bullets[0]
         
     player.rotate()
     player.monitor()
@@ -287,3 +301,5 @@ while not done:
     clock.tick()
 
 pygame.quit()
+
+#pass arguments earlier

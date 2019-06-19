@@ -151,25 +151,46 @@ bullets = []
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.bodyspritelist = ["sprites/char1.png", "sprites/char2.png", "sprites/char3.png", "sprites/char4.png"]
-        self.charnum = 0
-        self.animelapsed = 0
+        self.charnum = 1
+        self.walkrightnum = 1
+        self.walkleftnum = 1
         self.moveelapsed = 0
+        self.runelapsed = 0
+        self.idleelapsed = 0
         self.shootelapsed = 0
         self.collide = False
         self.x = 0
         self.y = 0
         self.speed = 0
         self.angle = 0
-        self.body = pygame.image.load(self.bodyspritelist[0]).convert_alpha()
+        self.armchanger_x = 5
+        self.armchanger_y = 1
+        self.body = pygame.image.load("sprites/char.png").convert_alpha()
         self.image = pygame.image.load("sprites/char_arm.png").convert_alpha()
         self.rect = self.body.get_rect()
-    def animation(self):
+    def idleanimation(self):
         if not any (pygame.key.get_pressed()):
-                self.charnum += 1
-                if self.charnum > 3:
-                    self.charnum = 0
-                self.body = pygame.image.load(self.bodyspritelist[self.charnum]).convert_alpha()
+            self.walkrightnum = 1
+            self.walkleftnum = 1
+            self.charnum += 1
+            if self.charnum > 3:
+                self.charnum = 1
+            self.body = pygame.image.load("sprites/char" + str(self.charnum) + ".png").convert_alpha()
+    def walking(self):    
+        if key[K_RIGHT] or key[ord("d")]:
+            self.walkrightnum += 1
+            self.walkleftnum = 1
+            self.charnum = 1
+            if self.walkrightnum > 17:
+                self.walkrightnum = 1
+            self.body = pygame.image.load("sprites/char_run" + str(self.walkrightnum) + ".png").convert_alpha()
+        if key[K_LEFT] or key[ord("a")]:
+            self.walkleftnum += 1
+            self.walkrightnum = 1
+            self.charnum = 1
+            if self.walkleftnum > 17:
+                self.walkleftnum = 1
+            self.body = pygame.image.load("sprites/char_runleft" + str(self.walkleftnum) + ".png").convert_alpha()
     def shoot(self):
         if mouse[0]:
             new_bullet = Bullet(self.x + 4, self.y + 9, self.angle)
@@ -178,17 +199,21 @@ class Player(pygame.sprite.Sprite):
     def updater(self):
         ticker = clock.tick_busy_loop()
         self.moveelapsed += ticker
+        self.runelapsed += ticker
+        self.idleelapsed += ticker
+        self.shootelapsed += ticker
         if self.moveelapsed > 5:
             self.moveelapsed = 0
             self.moveandcollide()
-        self.shootelapsed += ticker
+        if self.runelapsed > 35:
+            self.runelapsed = 0
+            self.walking()
+        if self.idleelapsed > 95:
+            self.idleelapsed = 0
+            self.idleanimation()
         if self.shootelapsed > 100:
             self.shootelapsed = 0
             self.shoot()
-        self.animelapsed += ticker
-        if self.animelapsed > 83:
-            self.animelapsed = 0
-            self.animation()
     def move(self):
         if key[K_LEFT] or key[ord("a")]:
                 self.x -= self.speed
@@ -217,7 +242,16 @@ class Player(pygame.sprite.Sprite):
         screen.blit(angledisplay,(10,210))
     def draw(self):
         screen.blit(self.body, (self.x, self.y))
-        screen.blit(self.rotimage, (self.armpos[0] - 5, self.armpos[1] - 1))
+        if not any (pygame.key.get_pressed()):
+            self.armchanger_x = 5
+            self.armchanger_y = 1
+        if key[K_RIGHT] or key[ord("d")]:
+            self.armchanger_x = 5
+            self.armchanger_y = 1
+        if key[K_LEFT] or key[ord("a")]:
+            self.armchanger_x = -5
+            self.armchanger_y = 1
+        screen.blit(self.rotimage, (self.armpos[0] - self.armchanger_x, self.armpos[1] - self.armchanger_y))
 
 player = Player()
 player.x = 30
@@ -288,3 +322,5 @@ while not done:
     clock.tick()
 
 pygame.quit()
+
+#pass arguments earlier
