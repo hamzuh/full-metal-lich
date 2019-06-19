@@ -173,7 +173,7 @@ class Player(pygame.sprite.Sprite):
             self.walkrightnum = 1
             self.walkleftnum = 1
             self.charnum += 1
-            if self.charnum > 3:
+            if self.charnum > 4:
                 self.charnum = 1
             self.body = pygame.image.load("sprites/char" + str(self.charnum) + ".png").convert_alpha()
     def walking(self):    
@@ -268,6 +268,7 @@ class Cursor(pygame.sprite.Sprite):
 
 cursor = Cursor()
 cursor.image = pygame.image.load("sprites/crosshair.png").convert_alpha()
+
 pygame.mouse.set_visible(False)
 
 done = False
@@ -322,5 +323,3 @@ while not done:
     clock.tick()
 
 pygame.quit()
-
-#pass arguments earlier
