@@ -120,9 +120,9 @@ class WallColliders(pygame.sprite.Sprite):
         self.rect = (self.rectval)
 
 topwall = WallColliders()
-topwall.rectval = [0, 0, 240, 18]
+topwall.rectval = [0, 0, 240, 26]
 bottomwall = WallColliders()
-bottomwall.rectval = [0, 159, 240, 20]
+bottomwall.rectval = [0, 159, 240, 25]
 leftwall = WallColliders()
 leftwall.rectval = [0, 0, 19, 180]
 
